@@ -48,14 +48,24 @@ namespace GitDWG
         /// <param name="args">Details about the launch request and process.</param>
         protected override async void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
-            // 檢查是否需要顯示初始設定
-            if (!_userSettingsService!.HasValidSettings())
+            // 每次啟動都需要用戶登入
+            await ShowUserLogin();
+        }
+
+        private async Task ShowUserLogin()
+        {
+            var loginWindow = new UserLoginWindow();
+            var loginSuccessful = await loginWindow.ShowAsync();
+
+            if (loginSuccessful && loginWindow.UserSettings != null)
             {
-                await ShowInitialSetup();
+                // 登入成功，顯示主窗口
+                await ShowMainWindow();
             }
             else
             {
-                await ShowMainWindow();
+                // 登入失敗或被取消，退出應用程式
+                Application.Current.Exit();
             }
         }
 
@@ -83,8 +93,8 @@ namespace GitDWG
             
             if (userSettings == null)
             {
-                // 如果還是沒有設定，重新顯示設定畫面
-                await ShowInitialSetup();
+                // 如果還是沒有設定，重新顯示登入畫面
+                await ShowUserLogin();
                 return;
             }
 

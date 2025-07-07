@@ -113,13 +113,31 @@
                                 </StackPanel>
                             </Border>
                             
-                            <TextBox PlaceholderText="提交訊息" Text="{x:Bind ViewModel.CommitMessage, Mode=TwoWay}" 
+                            <TextBox PlaceholderText="提交訊息（可選，快速提交會自動產生）" 
+                                    Text="{x:Bind ViewModel.CommitMessage, Mode=TwoWay}" 
                                     Margin="0,0,0,8" Height="60" TextWrapping="Wrap" AcceptsReturn="True"/>
                             
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <Button Content="暫存所有" Command="{x:Bind ViewModel.StageAllCommand}"/>
-                                <Button Content="提交" Command="{x:Bind ViewModel.CommitCommand}"
-                                       ToolTipService.ToolTip="{x:Bind ViewModel.CommitButtonTooltip, Mode=OneWay}"/>
+                            <!-- 提交按鈕群組 -->
+                            <StackPanel Spacing="8">
+                                <!-- 快速提交按鈕 - 一鍵式操作 -->
+                                <Button Content="🚀 快速提交" 
+                                       Command="{x:Bind ViewModel.QuickCommitCommand}"
+                                       Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
+                                       HorizontalAlignment="Stretch"
+                                       ToolTipService.ToolTip="一鍵暫存並提交所有變更，無需分步操作"/>
+                                
+                                <!-- 傳統兩步式操作 -->
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="暫存所有" Command="{x:Bind ViewModel.StageAllCommand}"/>
+                                    <Button Content="提交" Command="{x:Bind ViewModel.CommitCommand}"
+                                           ToolTipService.ToolTip="{x:Bind ViewModel.CommitButtonTooltip, Mode=OneWay}"/>
+                                </StackPanel>
+                                
+                                <!-- 說明文字 -->
+                                <TextBlock Text="💡 使用「快速提交」可一次完成暫存和提交，或使用傳統的「暫存所有」→「提交」兩步驟操作" 
+                                          FontSize="10" 
+                                          Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                          TextWrapping="Wrap"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>

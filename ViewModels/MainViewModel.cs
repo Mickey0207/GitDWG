@@ -100,6 +100,9 @@ namespace GitDWG.ViewModels
             // 新增版本回復命令
             RevertToCommitCommand = new RelayCommand(async () => await RevertToCommitAsync(), CanRevertToCommit);
             ResetToCommitCommand = new RelayCommand(async () => await ResetToCommitAsync(), CanResetToCommit);
+            
+            // 新增快速提交命令
+            QuickCommitCommand = new RelayCommand(QuickCommit, CanQuickCommit);
         }
 
         #region Properties
@@ -160,6 +163,7 @@ namespace GitDWG.ViewModels
                     {
                         UpdateCommitButtonTooltip();
                         ((RelayCommand)CommitCommand).RaiseCanExecuteChanged();
+                        ((RelayCommand)QuickCommitCommand).RaiseCanExecuteChanged();
                     }
                     catch (Exception ex)
                     {
@@ -302,6 +306,9 @@ namespace GitDWG.ViewModels
         // 新增版本回復命令
         public ICommand RevertToCommitCommand { get; private set; }
         public ICommand ResetToCommitCommand { get; private set; }
+        
+        // 新增快速提交命令
+        public ICommand QuickCommitCommand { get; private set; }
 
         #endregion
 
@@ -420,6 +427,9 @@ namespace GitDWG.ViewModels
                     {
                         StatusMessage = $"儲存庫已載入 - 分支: {CurrentBranch}";
                     }
+
+                    // 更新提交按鈕提示
+                    UpdateCommitButtonTooltip();
                 }
                 else
                 {
@@ -527,6 +537,71 @@ namespace GitDWG.ViewModels
             catch
             {
                 return false;
+            }
+        }
+
+        private bool CanQuickCommit()
+        {
+            // 只要有儲存庫載入且作者資訊完整就可以快速提交
+            if (!IsRepositoryLoaded || 
+                string.IsNullOrWhiteSpace(AuthorName) || 
+                string.IsNullOrWhiteSpace(AuthorEmail))
+            {
+                return false;
+            }
+
+            try
+            {
+                var statusInfo = _gitService.GetDetailedStatus();
+                // 只要有未暫存的變更或未追蹤的檔案就可以快速提交
+                return statusInfo.UnstagedFilesCount > 0 || statusInfo.UntrackedFilesCount > 0;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private void QuickCommit()
+        {
+            try
+            {
+                // 檢查是否有提交訊息，如果沒有則使用預設訊息
+                var message = string.IsNullOrWhiteSpace(CommitMessage) 
+                    ? $"快速提交 - {DateTime.Now:yyyy-MM-dd HH:mm}" 
+                    : CommitMessage;
+
+                // 先嘗試暫存所有變更
+                var stageResult = _gitService.StageAllChangesWithResult();
+                
+                if (!stageResult.Success)
+                {
+                    StatusMessage = $"暫存失敗: {stageResult.Message}";
+                    return;
+                }
+
+                // 如果暫存成功，繼續提交
+                if (stageResult.StagedCount > 0)
+                {
+                    _gitService.Commit(message, AuthorName, AuthorEmail);
+                    CommitMessage = string.Empty;
+                    RefreshData();
+                    
+                    var successMessage = $"快速提交成功！已提交 {stageResult.StagedCount} 個檔案";
+                    if (stageResult.SkippedCount > 0)
+                    {
+                        successMessage += $"，跳過 {stageResult.SkippedCount} 個檔案";
+                    }
+                    StatusMessage = successMessage;
+                }
+                else
+                {
+                    StatusMessage = "沒有檔案需要提交";
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusMessage = $"快速提交失敗: {ex.Message}";
             }
         }
 

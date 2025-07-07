@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GitDWG (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "GitDWG (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

@@ -46,7 +46,11 @@ namespace GitDWG.Views
 
         private void CreateUI()
         {
-            var mainGrid = new Grid();
+            var mainGrid = new Grid
+            {
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 17, 24, 39)) // 深色主背景
+            };
             
             var border = new Border
             {
@@ -58,9 +62,9 @@ namespace GitDWG.Views
                 MinHeight = 400,
                 CornerRadius = new CornerRadius(16),
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(250, 248, 249, 250)),
+                    Windows.UI.Color.FromArgb(255, 30, 41, 59)), // 深灰藍背景
                 BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(80, 229, 231, 235)),
+                    Windows.UI.Color.FromArgb(80, 59, 130, 246)), // 藍色邊框
                 BorderThickness = new Thickness(1)
             };
 
@@ -89,7 +93,7 @@ namespace GitDWG.Views
                 FontWeight = Microsoft.UI.Text.FontWeights.Bold,
                 VerticalAlignment = VerticalAlignment.Center,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 30, 41, 59))
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)) // 淺色文字
             };
             
             titlePanel.Children.Add(titleBlock);
@@ -103,7 +107,7 @@ namespace GitDWG.Views
                 Margin = new Thickness(0, 0, 0, 32),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 100, 116, 139))
+                    Windows.UI.Color.FromArgb(255, 148, 163, 184)) // 灰色文字
             };
             Grid.SetRow(subtitleBlock, 1);
             contentGrid.Children.Add(subtitleBlock);
@@ -117,7 +121,7 @@ namespace GitDWG.Views
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 0, 8),
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 51, 65, 85))
+                    Windows.UI.Color.FromArgb(255, 226, 232, 240)) // 淺灰色標籤
             };
             
             _userComboBox = new ComboBox
@@ -126,10 +130,13 @@ namespace GitDWG.Views
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 FontSize = 14,
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)), // 深色背景
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)), // 白色文字
                 BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 209, 213, 219)),
-                CornerRadius = new CornerRadius(8)
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99)), // 深灰邊框
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(12, 10, 12, 10)
             };
             
             // 載入用戶列表
@@ -149,7 +156,7 @@ namespace GitDWG.Views
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 0, 8),
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 51, 65, 85))
+                    Windows.UI.Color.FromArgb(255, 226, 232, 240)) // 淺灰色標籤
             };
             
             _passwordBox = new PasswordBox
@@ -158,10 +165,13 @@ namespace GitDWG.Views
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 FontSize = 14,
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)), // 深色背景
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)), // 白色文字
                 BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 209, 213, 219)),
-                CornerRadius = new CornerRadius(8)
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99)), // 深灰邊框
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(12, 10, 12, 10)
             };
             _passwordBox.KeyDown += PasswordBox_KeyDown;
 
@@ -174,7 +184,7 @@ namespace GitDWG.Views
             _errorMessage = new TextBlock
             {
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 239, 68, 68)),
+                    Windows.UI.Color.FromArgb(255, 248, 113, 113)), // 淺紅色錯誤
                 FontSize = 12,
                 Margin = new Thickness(0, 0, 0, 16),
                 Visibility = Visibility.Collapsed,
@@ -199,9 +209,9 @@ namespace GitDWG.Views
                 FontSize = 16,
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 16, 185, 129)),
+                    Windows.UI.Color.FromArgb(255, 16, 185, 129)), // 綠色主要按鈕
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                    Windows.UI.Color.FromArgb(255, 255, 255, 255)), // 白色文字
                 BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(10)
             };
@@ -214,9 +224,9 @@ namespace GitDWG.Views
                 Height = 40,
                 FontSize = 14,
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 99, 102, 241)),
+                    Windows.UI.Color.FromArgb(255, 99, 102, 241)), // 藍色次要按鈕
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                    Windows.UI.Color.FromArgb(255, 255, 255, 255)), // 白色文字
                 BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(8)
             };
@@ -229,9 +239,9 @@ namespace GitDWG.Views
                 Height = 40,
                 FontSize = 14,
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 248, 113, 113)),
+                    Windows.UI.Color.FromArgb(255, 248, 113, 113)), // 淺紅色危險按鈕
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 255, 255, 255)),
+                    Windows.UI.Color.FromArgb(255, 255, 255, 255)), // 白色文字
                 BorderThickness = new Thickness(0),
                 CornerRadius = new CornerRadius(8)
             };
@@ -243,48 +253,48 @@ namespace GitDWG.Views
             Grid.SetRow(buttonPanel, 5);
             contentGrid.Children.Add(buttonPanel);
 
-            // 說明文字 - 改為更柔和的藍色背景
+            // 說明文字 - 深色設計
             var infoPanel = new Border
             {
                 Padding = new Thickness(16),
                 Margin = new Thickness(0, 24, 0, 0),
-                CornerRadius = new CornerRadius(12),
+                CornerRadius = new CornerRadius(8),
                 Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(40, 59, 130, 246)),
+                    Windows.UI.Color.FromArgb(40, 16, 185, 129)), // 半透明綠色背景
                 BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(60, 147, 197, 253)),
+                    Windows.UI.Color.FromArgb(60, 16, 185, 129)), // 綠色邊框
                 BorderThickness = new Thickness(1)
             };
             
-            var infoStack = new StackPanel { Spacing = 4 };
+            var infoStack = new StackPanel { Spacing = 6 };
             var infoTitle = new TextBlock
             {
                 Text = "使用說明",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 FontSize = 14,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 30, 58, 138))
+                    Windows.UI.Color.FromArgb(255, 209, 250, 229)) // 淺綠色標題
             };
             var infoText1 = new TextBlock
             {
                 Text = "? 選擇您的用戶名稱並輸入對應密碼",
                 FontSize = 12,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 55, 65, 81))
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
             var infoText2 = new TextBlock
             {
                 Text = "? 新增用戶需要管理員密碼授權",
                 FontSize = 12,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 55, 65, 81))
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
             var infoText3 = new TextBlock
             {
                 Text = "? 登入成功後將進入Git版本控制系統",
                 FontSize = 12,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 55, 65, 81))
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
 
             infoStack.Children.Add(infoTitle);
@@ -375,7 +385,8 @@ namespace GitDWG.Views
                 PrimaryButtonText = "新增",
                 SecondaryButtonText = "取消",
                 DefaultButton = ContentDialogButton.Secondary,
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark // 深色對話框
             };
 
             var panel = new StackPanel { Spacing = 16 };
@@ -383,19 +394,37 @@ namespace GitDWG.Views
             var adminPasswordBox = new PasswordBox
             {
                 Header = "管理員密碼",
-                PlaceholderText = "請輸入管理員密碼"
+                PlaceholderText = "請輸入管理員密碼",
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)),
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99))
             };
             
             var newUserNameBox = new TextBox
             {
                 Header = "新用戶名稱",
-                PlaceholderText = "請輸入新用戶名稱"
+                PlaceholderText = "請輸入新用戶名稱",
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)),
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99))
             };
             
             var newUserPasswordBox = new PasswordBox
             {
                 Header = "新用戶密碼",
-                PlaceholderText = "請輸入新用戶密碼"
+                PlaceholderText = "請輸入新用戶密碼",
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)),
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99))
             };
 
             panel.Children.Add(adminPasswordBox);
@@ -448,7 +477,7 @@ namespace GitDWG.Views
             {
                 _errorMessage.Text = "錯誤: " + message;
                 _errorMessage.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 239, 68, 68)); // 更現代的紅色
+                    Windows.UI.Color.FromArgb(255, 248, 113, 113)); // 淺紅色
                 _errorMessage.Visibility = Visibility.Visible;
             }
         }
@@ -459,7 +488,7 @@ namespace GitDWG.Views
             {
                 _errorMessage.Text = "成功: " + message;
                 _errorMessage.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
-                    Windows.UI.Color.FromArgb(255, 16, 185, 129)); // 與登入按鈕一致的綠色
+                    Windows.UI.Color.FromArgb(255, 16, 185, 129)); // 綠色
                 _errorMessage.Visibility = Visibility.Visible;
             }
         }

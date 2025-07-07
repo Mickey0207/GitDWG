@@ -324,57 +324,221 @@ namespace GitDWG.Views
 
             if (!_commits.Any()) return;
 
+            // 分析分支結構
+            var branchCommits = AnalyzeBranchStructure();
+            
             const double nodeSpacing = 60;
-            const double levelSpacing = 40;
+            const double branchSpacing = 80;
             const double nodeRadius = 8;
             const double startX = 50;
             const double startY = 30;
 
-            for (int i = 0; i < _commits.Count; i++)
+            // 繪製分支線和節點
+            int commitIndex = 0;
+            foreach (var commit in _commits)
             {
-                var commit = _commits[i];
-                var x = startX + (i % 2) * levelSpacing; // 簡單的X位置計算
-                var y = startY + i * nodeSpacing;
+                // 確定該提交屬於哪個分支
+                var branchIndex = GetBranchIndex(commit, branchCommits);
+                
+                var x = startX + branchIndex * branchSpacing;
+                var y = startY + commitIndex * nodeSpacing;
 
                 // 創建提交節點
-                var node = CreateCommitNode(commit, x, y, nodeRadius);
+                var node = CreateCommitNode(commit, x, y, nodeRadius, branchIndex);
                 _graphNodes.Add(node);
 
-                // 連接線（簡化版本，實際應該根據分支關係繪製）
-                if (i > 0)
+                // 繪製連接線到父提交
+                if (commitIndex > 0)
                 {
-                    var prevY = startY + (i - 1) * nodeSpacing;
-                    var line = new Line
-                    {
-                        X1 = x,
-                        Y1 = prevY + nodeRadius,
-                        X2 = x,
-                        Y2 = y - nodeRadius,
-                        Stroke = new SolidColorBrush(Color.FromArgb(255, 75, 85, 99)), // 深灰連接線
-                        StrokeThickness = 2
-                    };
-                    Canvas.SetZIndex(line, 0);
-                    _graphCanvas.Children.Add(line);
+                    DrawConnectionLines(commit, x, y, nodeRadius, branchCommits, startX, startY, nodeSpacing, branchSpacing);
                 }
+
+                commitIndex++;
             }
 
+            // 繪製分支標籤
+            DrawBranchLabels(branchCommits, startX, startY, branchSpacing);
+
             // 調整畫布大小
-            if (_commits.Any())
+            AdjustCanvasSize(startX, startY, nodeSpacing, branchSpacing, branchCommits.Count);
+        }
+
+        private Dictionary<string, List<CommitInfo>> AnalyzeBranchStructure()
+        {
+            var branchCommits = new Dictionary<string, List<CommitInfo>>();
+            
+            // 為每個分支創建提交列表
+            foreach (var branch in _branches)
             {
-                var maxY = startY + (_commits.Count - 1) * nodeSpacing + 50;
-                _graphCanvas.Height = Math.Max(600, maxY);
-                _graphCanvas.Width = Math.Max(400, startX + levelSpacing * 3);
+                branchCommits[branch] = new List<CommitInfo>();
+            }
+
+            // 簡化版本：將提交分配給分支
+            // 實際應用中需要更複雜的Git分析
+            var mainBranch = _branches.Contains("main") ? "main" : 
+                            _branches.Contains("master") ? "master" : 
+                            _branches.FirstOrDefault() ?? "main";
+
+            // 將所有提交先分配給主分支
+            foreach (var commit in _commits)
+            {
+                if (!branchCommits.ContainsKey(mainBranch))
+                    branchCommits[mainBranch] = new List<CommitInfo>();
+                branchCommits[mainBranch].Add(commit);
+            }
+
+            return branchCommits;
+        }
+
+        private int GetBranchIndex(CommitInfo commit, Dictionary<string, List<CommitInfo>> branchCommits)
+        {
+            // 簡化版本：根據提交訊息或作者來判斷分支
+            // 實際應用中需要更精確的Git分支分析
+            
+            if (commit.Message.ToLower().Contains("feature") || commit.Message.ToLower().Contains("feat"))
+                return 1; // feature分支
+            else if (commit.Message.ToLower().Contains("fix") || commit.Message.ToLower().Contains("bug"))
+                return 2; // bugfix分支
+            else if (commit.Message.ToLower().Contains("hotfix"))
+                return 3; // hotfix分支
+            
+            return 0; // 主分支
+        }
+
+        private void DrawConnectionLines(CommitInfo commit, double x, double y, double nodeRadius, 
+            Dictionary<string, List<CommitInfo>> branchCommits, double startX, double startY, 
+            double nodeSpacing, double branchSpacing)
+        {
+            var currentIndex = _commits.IndexOf(commit);
+            if (currentIndex <= 0) return;
+
+            var previousCommit = _commits[currentIndex - 1];
+            var prevBranchIndex = GetBranchIndex(previousCommit, branchCommits);
+            var currentBranchIndex = GetBranchIndex(commit, branchCommits);
+            
+            var prevX = startX + prevBranchIndex * branchSpacing;
+            var prevY = startY + (currentIndex - 1) * nodeSpacing;
+
+            if (currentBranchIndex == prevBranchIndex)
+            {
+                // 同一分支的直線連接
+                var straightLine = new Line
+                {
+                    X1 = x,
+                    Y1 = prevY + nodeRadius,
+                    X2 = x,
+                    Y2 = y - nodeRadius,
+                    Stroke = GetBranchColor(currentBranchIndex),
+                    StrokeThickness = 3
+                };
+                Canvas.SetZIndex(straightLine, 0);
+                _graphCanvas.Children.Add(straightLine);
+            }
+            else
+            {
+                // 不同分支的彎曲連接（合併或分叉）
+                var path = new Microsoft.UI.Xaml.Shapes.Path
+                {
+                    Stroke = GetBranchColor(currentBranchIndex),
+                    StrokeThickness = 2,
+                    Data = CreateCurvedPath(prevX, prevY + nodeRadius, x, y - nodeRadius)
+                };
+                Canvas.SetZIndex(path, 0);
+                _graphCanvas.Children.Add(path);
             }
         }
 
-        private BranchGraphNode CreateCommitNode(CommitInfo commit, double x, double y, double radius)
+        private SolidColorBrush GetBranchColor(int branchIndex)
         {
-            // 節點圓圈
+            var colors = new[]
+            {
+                Windows.UI.Color.FromArgb(255, 59, 130, 246),   // 藍色 - main
+                Windows.UI.Color.FromArgb(255, 16, 185, 129),   // 綠色 - feature
+                Windows.UI.Color.FromArgb(255, 245, 158, 11),   // 黃色 - bugfix
+                Windows.UI.Color.FromArgb(255, 239, 68, 68),    // 紅色 - hotfix
+                Windows.UI.Color.FromArgb(255, 168, 85, 247),   // 紫色 - 其他
+                Windows.UI.Color.FromArgb(255, 236, 72, 153),   // 粉色 - 其他
+            };
+            
+            return new SolidColorBrush(colors[branchIndex % colors.Length]);
+        }
+
+        private Microsoft.UI.Xaml.Media.Geometry CreateCurvedPath(double x1, double y1, double x2, double y2)
+        {
+            var pathGeometry = new Microsoft.UI.Xaml.Media.PathGeometry();
+            var pathFigure = new Microsoft.UI.Xaml.Media.PathFigure
+            {
+                StartPoint = new Windows.Foundation.Point(x1, y1)
+            };
+
+            // 創建貝塞爾曲線
+            var bezierSegment = new Microsoft.UI.Xaml.Media.BezierSegment
+            {
+                Point1 = new Windows.Foundation.Point(x1, y1 + (y2 - y1) / 3),
+                Point2 = new Windows.Foundation.Point(x2, y2 - (y2 - y1) / 3),
+                Point3 = new Windows.Foundation.Point(x2, y2)
+            };
+            
+            pathFigure.Segments.Add(bezierSegment);
+            pathGeometry.Figures.Add(pathFigure);
+            
+            return pathGeometry;
+        }
+
+        private void DrawBranchLabels(Dictionary<string, List<CommitInfo>> branchCommits, 
+            double startX, double startY, double branchSpacing)
+        {
+            var branchNames = new[] { "main", "feature", "bugfix", "hotfix" };
+            
+            for (int i = 0; i < Math.Min(branchNames.Length, 4); i++)
+            {
+                var branchLabel = new Border
+                {
+                    Background = new SolidColorBrush(Windows.UI.Color.FromArgb(180, 51, 65, 85)),
+                    Padding = new Thickness(8, 4, 8, 4),
+                    CornerRadius = new CornerRadius(12),
+                    BorderBrush = GetBranchColor(i),
+                    BorderThickness = new Thickness(2)
+                };
+
+                var labelText = new TextBlock
+                {
+                    Text = branchNames[i],
+                    FontSize = 11,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                    Foreground = GetBranchColor(i)
+                };
+
+                branchLabel.Child = labelText;
+                Canvas.SetLeft(branchLabel, startX + i * branchSpacing - 20);
+                Canvas.SetTop(branchLabel, startY - 25);
+                Canvas.SetZIndex(branchLabel, 3);
+                
+                _graphCanvas.Children.Add(branchLabel);
+            }
+        }
+
+        private void AdjustCanvasSize(double startX, double startY, double nodeSpacing, 
+            double branchSpacing, int branchCount)
+        {
+            if (_commits.Any())
+            {
+                var maxY = startY + (_commits.Count - 1) * nodeSpacing + 50;
+                var maxX = startX + branchCount * branchSpacing + 100;
+                
+                _graphCanvas.Height = Math.Max(600, maxY);
+                _graphCanvas.Width = Math.Max(600, maxX);
+            }
+        }
+
+        private BranchGraphNode CreateCommitNode(CommitInfo commit, double x, double y, double radius, int branchIndex)
+        {
+            // 節點圓圈 - 使用分支顏色
             var circle = new Ellipse
             {
                 Width = radius * 2,
                 Height = radius * 2,
-                Fill = new SolidColorBrush(Color.FromArgb(255, 59, 130, 246)), // 藍色節點
+                Fill = GetBranchColor(branchIndex),
                 Stroke = new SolidColorBrush(Color.FromArgb(255, 30, 41, 59)), // 深色邊框
                 StrokeThickness = 2
             };
@@ -386,21 +550,21 @@ namespace GitDWG.Views
             var messageBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromArgb(200, 51, 65, 85)), // 半透明深色背景
-                Padding = new Thickness(4, 2, 4, 2),
-                MaxWidth = 200,
-                CornerRadius = new CornerRadius(2),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(255, 75, 85, 99)),
+                Padding = new Thickness(6, 3, 6, 3),
+                MaxWidth = 220,
+                CornerRadius = new CornerRadius(4),
+                BorderBrush = GetBranchColor(branchIndex),
                 BorderThickness = new Thickness(1)
             };
-            Canvas.SetLeft(messageBorder, x + radius + 10);
-            Canvas.SetTop(messageBorder, y - 8);
+            Canvas.SetLeft(messageBorder, x + radius + 12);
+            Canvas.SetTop(messageBorder, y - 10);
             Canvas.SetZIndex(messageBorder, 1);
 
             // 提交訊息標籤
             var messageLabel = new TextBlock
             {
-                Text = commit.Message.Length > 40 ? 
-                    commit.Message.Substring(0, 40) + "..." : 
+                Text = commit.Message.Length > 45 ? 
+                    commit.Message.Substring(0, 45) + "..." : 
                     commit.Message,
                 FontSize = 11,
                 Foreground = new SolidColorBrush(Color.FromArgb(255, 226, 232, 240)) // 淺色文字
@@ -410,14 +574,14 @@ namespace GitDWG.Views
             // SHA背景
             var shaBorder = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(180, 75, 85, 99)), // 半透明深灰背景
-                Padding = new Thickness(3, 1, 3, 1),
+                Background = new SolidColorBrush(Color.FromArgb(160, 75, 85, 99)), // 半透明深灰背景
+                Padding = new Thickness(4, 2, 4, 2),
                 CornerRadius = new CornerRadius(2),
                 BorderBrush = new SolidColorBrush(Color.FromArgb(255, 107, 114, 128)),
                 BorderThickness = new Thickness(1)
             };
-            Canvas.SetLeft(shaBorder, x + radius + 10);
-            Canvas.SetTop(shaBorder, y + 8);
+            Canvas.SetLeft(shaBorder, x + radius + 12);
+            Canvas.SetTop(shaBorder, y + 6);
             Canvas.SetZIndex(shaBorder, 1);
 
             // SHA標籤
@@ -430,9 +594,22 @@ namespace GitDWG.Views
             };
             shaBorder.Child = shaLabel;
 
+            // 作者和日期標籤
+            var authorDateLabel = new TextBlock
+            {
+                Text = $"{commit.Author} ? {commit.Date:MM/dd HH:mm}",
+                FontSize = 9,
+                Foreground = new SolidColorBrush(Color.FromArgb(255, 107, 114, 128)),
+                MaxWidth = 200
+            };
+            Canvas.SetLeft(authorDateLabel, x + radius + 12);
+            Canvas.SetTop(authorDateLabel, y + 22);
+            Canvas.SetZIndex(authorDateLabel, 1);
+
             _graphCanvas.Children.Add(circle);
             _graphCanvas.Children.Add(messageBorder);
             _graphCanvas.Children.Add(shaBorder);
+            _graphCanvas.Children.Add(authorDateLabel);
 
             var node = new BranchGraphNode
             {

@@ -14,6 +14,7 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using GitDWG.ViewModels;
 using GitDWG.Services;
+using GitDWG.Views;
 using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -47,6 +48,30 @@ namespace GitDWG
             }
         }
 
+        // Git選單事件處理
+        private void OpenBranchGraphManager_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ViewModel.RepositoryPath) || !ViewModel.IsRepositoryLoaded)
+                {
+                    ShowMessage("請先選擇或初始化Git儲存庫");
+                    return;
+                }
+
+                // 創建GitService實例
+                var gitService = new GitService(ViewModel.RepositoryPath);
+                
+                // 開啟分支圖形管理器
+                var branchGraphWindow = new BranchGraphWindow(gitService);
+                branchGraphWindow.Activate();
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"開啟分支圖形管理器失敗: {ex.Message}");
+            }
+        }
+
         // 專案選單事件處理
         private async void OpenProjectFolder_Click(object sender, RoutedEventArgs e)
         {
@@ -63,7 +88,8 @@ namespace GitDWG
                         Title = "提示",
                         Content = "尚未選擇有效的專案資料夾",
                         CloseButtonText = "確定",
-                        XamlRoot = this.Content.XamlRoot
+                        XamlRoot = this.Content.XamlRoot,
+                        RequestedTheme = ElementTheme.Dark
                     };
                     await dialog.ShowAsync();
                 }
@@ -75,125 +101,11 @@ namespace GitDWG
                     Title = "錯誤",
                     Content = $"無法開啟專案資料夾: {ex.Message}",
                     CloseButtonText = "確定",
-                    XamlRoot = this.Content.XamlRoot
+                    XamlRoot = this.Content.XamlRoot,
+                    RequestedTheme = ElementTheme.Dark
                 };
                 await dialog.ShowAsync();
             }
-        }
-
-        // 測試選單事件處理
-        private async void TestAutoCADConnection_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // 這裡可以添加測試AutoCAD連接的邏輯
-                var dialog = new ContentDialog
-                {
-                    Title = "AutoCAD連接測試",
-                    Content = "正在測試AutoCAD連接...\n\n這個功能將在未來版本中實現。",
-                    CloseButtonText = "確定",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-            catch (Exception ex)
-            {
-                var dialog = new ContentDialog
-                {
-                    Title = "測試失敗",
-                    Content = $"AutoCAD連接測試失敗: {ex.Message}",
-                    CloseButtonText = "確定",
-                    XamlRoot = this.Content.XamlRoot
-                };
-                await dialog.ShowAsync();
-            }
-        }
-
-        private async void TestDrawingOpen_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "圖面開啟測試",
-                Content = "這個功能將允許您測試圖面檔案的開啟功能。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        // 分析選單事件處理
-        private async void AnalyzeCommitTrends_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "提交趨勢分析",
-                Content = "這個功能將分析您的提交模式和趨勢。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        private async void AnalyzeFileChanges_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "檔案變更分析",
-                Content = "這個功能將分析檔案變更的頻率和模式。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        // 工具選單事件處理
-        private async void DrawingCompareTools_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "圖面比較工具",
-                Content = "這個功能將提供進階的圖面比較工具。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        private async void BatchProcessTools_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "批次處理工具",
-                Content = "這個功能將提供批次處理多個圖面檔案的能力。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        // 延伸模組選單事件處理
-        private async void ManageExtensions_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "管理延伸模組",
-                Content = "這個功能將允許您管理已安裝的延伸模組。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
-        }
-
-        private async void InstallExtensions_Click(object sender, RoutedEventArgs e)
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "安裝延伸模組",
-                Content = "這個功能將允許您安裝新的延伸模組。\n\n將在未來版本中實現。",
-                CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
-            };
-            await dialog.ShowAsync();
         }
 
         // 視窗選單事件處理
@@ -215,7 +127,8 @@ namespace GitDWG
                     Title = "錯誤",
                     Content = $"無法建立新視窗: {ex.Message}",
                     CloseButtonText = "確定",
-                    XamlRoot = this.Content.XamlRoot
+                    XamlRoot = this.Content.XamlRoot,
+                    RequestedTheme = ElementTheme.Dark
                 };
                 await dialog.ShowAsync();
             }
@@ -237,10 +150,12 @@ namespace GitDWG
                          "? Git版本控制\n" +
                          "? AutoCAD圖面比較\n" +
                          "? 智慧檔案管理\n" +
-                         "? 多用戶協作\n\n" +
+                         "? 多用戶協作\n" +
+                         "? 圖形化分支管理\n\n" +
                          "詳細說明請參考產品文檔。",
                 CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
         }
@@ -255,10 +170,12 @@ namespace GitDWG
                          "2. 設定AutoCAD路徑\n" +
                          "3. 修改CAD圖面檔案\n" +
                          "4. 使用快速提交功能\n" +
-                         "5. 查看提交歷史和比較版本\n\n" +
+                         "5. 查看提交歷史和比較版本\n" +
+                         "6. 使用分支圖形管理器管理分支\n\n" +
                          "更多詳細說明請查看完整文檔。",
                 CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
         }
@@ -276,11 +193,13 @@ namespace GitDWG
                          "Ctrl+Enter - 快速提交\n" +
                          "Ctrl+A - 暫存所有\n" +
                          "Ctrl+Shift+B - 建立新分支\n" +
+                         "Ctrl+Shift+G - 分支圖形管理器\n" +
                          "Ctrl+H - 查看提交歷史\n" +
                          "Ctrl+P - 選項設定\n" +
                          "F1 - 說明",
                 CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
         }
@@ -290,11 +209,15 @@ namespace GitDWG
             var dialog = new ContentDialog
             {
                 Title = "檢查更新",
-                Content = "目前版本：GitDWG v1.0.0\n\n" +
-                         "正在檢查更新...\n\n" +
+                Content = "目前版本：GitDWG v1.2.0\n\n" +
+                         "最新更新：\n" +
+                         "? 深色UI主題設計\n" +
+                         "? 圖形化分支管理器\n" +
+                         "? 移除未完成功能\n\n" +
                          "您目前使用的是最新版本！",
                 CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
         }
@@ -304,14 +227,34 @@ namespace GitDWG
             var dialog = new ContentDialog
             {
                 Title = "關於 GitDWG",
-                Content = "GitDWG v1.0.0\n\n" +
+                Content = "GitDWG v1.2.0\n\n" +
                          "專為AutoCAD設計的Git版本控制工具\n\n" +
+                         "核心功能：\n" +
+                         "? 圖形化分支管理器\n" +
+                         "? 深色UI主題設計\n" +
+                         "? 專業版本控制\n" +
+                         "? CAD檔案智慧管理\n\n" +
                          "開發團隊：GitDWG Development Team\n" +
                          "技術支援：support@gitdwg.com\n\n" +
                          "? 2024 GitDWG. All rights reserved.\n\n" +
                          "感謝您使用 GitDWG！",
                 CloseButtonText = "確定",
-                XamlRoot = this.Content.XamlRoot
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
+            };
+            await dialog.ShowAsync();
+        }
+
+        // 輔助方法
+        private async void ShowMessage(string message)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "訊息",
+                Content = message,
+                CloseButtonText = "確定",
+                XamlRoot = this.Content.XamlRoot,
+                RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
         }

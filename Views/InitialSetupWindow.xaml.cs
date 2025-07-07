@@ -46,17 +46,26 @@ namespace GitDWG.Views
 
         private void CreateUI()
         {
-            var mainGrid = new Grid();
+            var mainGrid = new Grid
+            {
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 17, 24, 39)) // 深色背景
+            };
             
             var border = new Border
             {
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(20),
-                Padding = new Thickness(24),
-                MinWidth = 400,
-                MinHeight = 300,
-                CornerRadius = new CornerRadius(8)
+                Padding = new Thickness(32),
+                MinWidth = 450,
+                MinHeight = 380,
+                CornerRadius = new CornerRadius(16),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 30, 41, 59)), // 深灰藍背景
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(80, 59, 130, 246)), // 藍色邊框
+                BorderThickness = new Thickness(1)
             };
 
             var contentGrid = new Grid();
@@ -71,10 +80,12 @@ namespace GitDWG.Views
             var titleBlock = new TextBlock
             {
                 Text = "歡迎使用 GitDWG",
-                FontSize = 24,
+                FontSize = 28,
                 FontWeight = Microsoft.UI.Text.FontWeights.Bold,
                 Margin = new Thickness(0, 0, 0, 16),
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)) // 淺色文字
             };
             Grid.SetRow(titleBlock, 0);
             contentGrid.Children.Add(titleBlock);
@@ -83,33 +94,48 @@ namespace GitDWG.Views
             {
                 Text = "請設定您的作者資訊，這將用於Git提交記錄。",
                 FontSize = 14,
-                Margin = new Thickness(0, 0, 0, 24),
+                Margin = new Thickness(0, 0, 0, 32),
                 TextWrapping = TextWrapping.Wrap,
-                HorizontalAlignment = HorizontalAlignment.Center
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 148, 163, 184)) // 灰色文字
             };
             Grid.SetRow(subtitleBlock, 1);
             contentGrid.Children.Add(subtitleBlock);
 
             // 作者姓名
-            var namePanel = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+            var namePanel = new StackPanel { Margin = new Thickness(0, 0, 0, 20) };
             var nameLabel = new TextBlock
             {
                 Text = "作者姓名 *",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 8)
+                FontSize = 16,
+                Margin = new Thickness(0, 0, 0, 8),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 226, 232, 240)) // 淺灰色標籤
             };
             _authorNameTextBox = new TextBox
             {
-                PlaceholderText = "請輸入您的姓名"
+                PlaceholderText = "請輸入您的姓名",
+                FontSize = 14,
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)), // 深色輸入框背景
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)), // 白色文字
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99)), // 深灰邊框
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(12, 10, 12, 10)
             };
             _authorNameTextBox.TextChanged += ValidateInput;
 
             _authorNameError = new TextBlock
             {
                 Text = "請輸入作者姓名",
-                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 248, 113, 113)), // 淺紅色錯誤提示
                 FontSize = 12,
-                Margin = new Thickness(0, 4, 0, 0),
+                Margin = new Thickness(0, 6, 0, 0),
                 Visibility = Visibility.Collapsed
             };
 
@@ -120,25 +146,38 @@ namespace GitDWG.Views
             contentGrid.Children.Add(namePanel);
 
             // 作者信箱
-            var emailPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 16) };
+            var emailPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 20) };
             var emailLabel = new TextBlock
             {
                 Text = "作者信箱 *",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                Margin = new Thickness(0, 0, 0, 8)
+                FontSize = 16,
+                Margin = new Thickness(0, 0, 0, 8),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 226, 232, 240)) // 淺灰色標籤
             };
             _authorEmailTextBox = new TextBox
             {
-                PlaceholderText = "請輸入您的Email地址"
+                PlaceholderText = "請輸入您的Email地址",
+                FontSize = 14,
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 51, 65, 85)), // 深色輸入框背景
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 241, 245, 249)), // 白色文字
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99)), // 深灰邊框
+                CornerRadius = new CornerRadius(8),
+                Padding = new Thickness(12, 10, 12, 10)
             };
             _authorEmailTextBox.TextChanged += ValidateInput;
 
             _authorEmailError = new TextBlock
             {
                 Text = "請輸入有效的Email地址",
-                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 248, 113, 113)), // 淺紅色錯誤提示
                 FontSize = 12,
-                Margin = new Thickness(0, 4, 0, 0),
+                Margin = new Thickness(0, 6, 0, 0),
                 Visibility = Visibility.Collapsed
             };
 
@@ -148,35 +187,48 @@ namespace GitDWG.Views
             Grid.SetRow(emailPanel, 3);
             contentGrid.Children.Add(emailPanel);
 
-            // 提示訊息
+            // 提示訊息 - 深色設計
             var infoPanel = new Border
             {
-                Padding = new Thickness(12),
-                Margin = new Thickness(0, 0, 0, 16),
-                CornerRadius = new CornerRadius(4)
+                Padding = new Thickness(16),
+                Margin = new Thickness(0, 8, 0, 24),
+                CornerRadius = new CornerRadius(8),
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(40, 16, 185, 129)), // 半透明綠色背景
+                BorderBrush = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(60, 16, 185, 129)), // 綠色邊框
+                BorderThickness = new Thickness(1)
             };
             
-            var infoStack = new StackPanel { Spacing = 4 };
+            var infoStack = new StackPanel { Spacing = 6 };
             var infoTitle = new TextBlock
             {
-                Text = "溫馨提示",
+                Text = "設定說明",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                FontSize = 14
+                FontSize = 14,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 209, 250, 229)) // 淺綠色標題
             };
             var infoText1 = new TextBlock
             {
                 Text = "? 這些資訊將保存在本機，用於Git提交記錄",
-                FontSize = 12
+                FontSize = 12,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
             var infoText2 = new TextBlock
             {
                 Text = "? 您可以稍後在設定中修改這些資訊",
-                FontSize = 12
+                FontSize = 12,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
             var infoText3 = new TextBlock
             {
-                Text = "? 所有欄位都是必填的",
-                FontSize = 12
+                Text = "? 所有欄位都是必填的，完成後即可開始使用",
+                FontSize = 12,
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 187, 247, 208)) // 淺綠色文字
             };
 
             infoStack.Children.Add(infoTitle);
@@ -187,31 +239,40 @@ namespace GitDWG.Views
             Grid.SetRow(infoPanel, 4);
             contentGrid.Children.Add(infoPanel);
 
-            // 按鈕區域
+            // 按鈕區域 - 只保留確定按鈕
             var buttonPanel = new StackPanel
             {
-                Orientation = Orientation.Horizontal,
-                HorizontalAlignment = HorizontalAlignment.Right,
+                HorizontalAlignment = HorizontalAlignment.Stretch,
                 VerticalAlignment = VerticalAlignment.Bottom,
-                Spacing = 8
+                Margin = new Thickness(0, 16, 0, 0)
             };
-
-            var cancelButton = new Button
-            {
-                Content = "取消",
-                MinWidth = 80
-            };
-            cancelButton.Click += CancelButton_Click;
 
             _saveButton = new Button
             {
-                Content = "確定",
-                MinWidth = 80,
+                Content = "完成設定",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                Height = 44,
+                FontSize = 16,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 16, 185, 129)), // 綠色主要按鈕
+                Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 255, 255, 255)), // 白色文字
+                BorderThickness = new Thickness(0),
+                CornerRadius = new CornerRadius(10),
                 IsEnabled = false
             };
             _saveButton.Click += SaveButton_Click;
 
-            buttonPanel.Children.Add(cancelButton);
+            // 添加Enter鍵支援
+            _authorEmailTextBox.KeyDown += (s, e) =>
+            {
+                if (e.Key == Windows.System.VirtualKey.Enter && _saveButton.IsEnabled)
+                {
+                    SaveButton_Click(s, null);
+                }
+            };
+
             buttonPanel.Children.Add(_saveButton);
             Grid.SetRow(buttonPanel, 5);
             contentGrid.Children.Add(buttonPanel);
@@ -284,6 +345,18 @@ namespace GitDWG.Views
             }
 
             _saveButton.IsEnabled = isValid;
+            
+            // 動態更新按鈕樣式
+            if (isValid)
+            {
+                _saveButton.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 16, 185, 129)); // 啟用時的綠色
+            }
+            else
+            {
+                _saveButton.Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(
+                    Windows.UI.Color.FromArgb(255, 75, 85, 99)); // 禁用時的灰色
+            }
         }
 
         private bool IsValidEmail(string email)
@@ -318,33 +391,6 @@ namespace GitDWG.Views
                 _setupCompletionSource?.SetResult(true);
                 this.Close();
             }
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            ShowExitConfirmation();
-        }
-
-        private async void ShowExitConfirmation()
-        {
-            var dialog = new ContentDialog
-            {
-                Title = "確認退出",
-                Content = "您尚未完成初始設定。\n\n沒有作者資訊將無法使用Git功能。\n確定要退出應用程式嗎？",
-                PrimaryButtonText = "重新設定",
-                SecondaryButtonText = "退出應用程式",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.Content.XamlRoot
-            };
-
-            var result = await dialog.ShowAsync();
-            
-            if (result == ContentDialogResult.Secondary)
-            {
-                // 用戶選擇退出
-                Application.Current.Exit();
-            }
-            // 如果選擇重新設定，什麼都不做，保持窗口開啟
         }
 
         public Task<bool> ShowAsync()

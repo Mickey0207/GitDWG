@@ -29,6 +29,9 @@
             <SolidColorBrush x:Key="SuccessBrush" Color="#FF10B981"/>                  <!-- 綠色成功 -->
             <SolidColorBrush x:Key="WarningBrush" Color="#FFF59E0B"/>                  <!-- 黃色警告 -->
             <SolidColorBrush x:Key="DangerBrush" Color="#FFF87171"/>                   <!-- 紅色危險 -->
+            
+            <!-- 添加轉換器 -->
+            <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         </Grid.Resources>
         
         <Grid.RowDefinitions>
@@ -430,8 +433,53 @@
                     <StackPanel>
                         <TextBlock Text="版本操作" FontWeight="Bold" FontSize="16" Margin="0,0,0,12"
                                   Foreground="{StaticResource PrimaryTextBrush}"/>
+                        
+                        <!-- 選中的提交信息 -->
+                        <Border Background="{StaticResource InputBackgroundBrush}" 
+                                CornerRadius="8" Padding="12" Margin="0,0,0,12"
+                                x:Name="SelectedCommitBorder">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                
+                                <TextBlock Grid.Row="0" Text="已選擇版本" FontSize="12" FontWeight="SemiBold"
+                                          Foreground="{StaticResource AccentBrush}" Margin="0,0,0,6"/>
+                                
+                                <Grid Grid.Row="1" Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SelectedCommit.ShortSha, Mode=OneWay, FallbackValue=''}" 
+                                              FontFamily="Consolas" FontSize="11" FontWeight="Bold"
+                                              Foreground="{StaticResource AccentBrush}" Margin="0,0,8,0"/>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectedCommit.Message, Mode=OneWay, FallbackValue=''}" 
+                                              FontSize="12" FontWeight="SemiBold"
+                                              Foreground="{StaticResource PrimaryTextBrush}" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
+                                
+                                <Grid Grid.Row="2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <TextBlock Grid.Column="0" Text="{x:Bind ViewModel.SelectedCommit.Author, Mode=OneWay, FallbackValue=''}" 
+                                              FontSize="11" Foreground="{StaticResource SecondaryTextBrush}"/>
+                                    <TextBlock Grid.Column="1" Text="{x:Bind ViewModel.SelectedCommit.Date, Mode=OneWay, FallbackValue=''}" 
+                                              FontSize="11" Foreground="{StaticResource MutedTextBrush}"/>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                        
+                        <!-- 版本操作按鈕 -->
                         <Grid>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
@@ -446,7 +494,7 @@
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="版本比較" FontSize="14" FontWeight="SemiBold"
                                               Foreground="{StaticResource SecondaryTextBrush}"/>
-                                    <TextBlock Text="比較選擇的提交與其前一個版本" FontSize="12" 
+                                    <TextBlock Text="與前一版本比較變更的檔案" FontSize="11" 
                                               Foreground="{StaticResource MutedTextBrush}"/>
                                 </StackPanel>
                                 
@@ -454,39 +502,124 @@
                                        Command="{x:Bind ViewModel.CompareCommitsCommand}"
                                        Background="{StaticResource AccentBrush}" Foreground="White"
                                        CornerRadius="6" BorderThickness="0" Padding="16,8"
-                                       Margin="12,0"/>
+                                       Margin="12,0" FontSize="13" FontWeight="SemiBold">
+                                    <Button.Resources>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border x:Name="ButtonBorder"
+                                                                Background="{TemplateBinding Background}"
+                                                                CornerRadius="{TemplateBinding CornerRadius}"
+                                                                Padding="{TemplateBinding Padding}">
+                                                            <ContentPresenter x:Name="ContentPresenter"
+                                                                              HorizontalAlignment="Center"
+                                                                              VerticalAlignment="Center"/>
+                                                            <VisualStateManager.VisualStateGroups>
+                                                                <VisualStateGroup x:Name="CommonStates">
+                                                                    <VisualState x:Name="Normal"/>
+                                                                    <VisualState x:Name="PointerOver">
+                                                                        <Storyboard>
+                                                                            <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                            To="#FF2563EB" Duration="0:0:0.1"/>
+                                                                        </Storyboard>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Pressed">
+                                                                        <Storyboard>
+                                                                            <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                            To="#FF1D4ED8" Duration="0:0:0.1"/>
+                                                                        </Storyboard>
+                                                                    </VisualState>
+                                                                    <VisualState x:Name="Disabled">
+                                                                        <Storyboard>
+                                                                            <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                                                            Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                                                            To="#FF6B7280" Duration="0:0:0.1"/>
+                                                                        </Storyboard>
+                                                                    </VisualState>
+                                                                </VisualStateGroup>
+                                                            </VisualStateManager.VisualStateGroups>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Button.Resources>
+                                </Button>
                             </Grid>
                             
-                            <!-- 版本回復 -->
-                            <Grid Grid.Row="1">
+                            <!-- 安全回復 -->
+                            <Grid Grid.Row="1" Margin="0,0,0,12">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 
                                 <StackPanel Grid.Column="0">
-                                    <TextBlock Text="版本回復" FontSize="14" FontWeight="SemiBold"
-                                              Foreground="{StaticResource SecondaryTextBrush}"/>
-                                    <TextBlock Text="回復到選擇的版本或重置歷史" FontSize="12" 
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="安全回復" FontSize="14" FontWeight="SemiBold"
+                                                  Foreground="{StaticResource SecondaryTextBrush}"/>
+                                        <Border Background="{StaticResource SuccessBrush}" CornerRadius="10" Padding="6,2">
+                                            <TextBlock Text="推薦" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="創建新提交來撤銷變更，保留歷史" FontSize="11" 
                                               Foreground="{StaticResource MutedTextBrush}"/>
                                 </StackPanel>
                                 
                                 <Button Grid.Column="1" Content="安全回復" 
                                        Command="{x:Bind ViewModel.RevertToCommitCommand}"
                                        Background="{StaticResource SuccessBrush}" Foreground="White"
-                                       CornerRadius="6" BorderThickness="0" Padding="12,8"
-                                       Margin="8,0,4,0"
-                                       ToolTipService.ToolTip="創建新提交來撤銷變更，保留歷史記錄"/>
+                                       CornerRadius="6" BorderThickness="0" Padding="16,8"
+                                       Margin="12,0" FontSize="13" FontWeight="SemiBold"
+                                       ToolTipService.ToolTip="使用 git revert 創建新提交來撤銷變更，這是安全且可逆的操作"/>
+                            </Grid>
+                            
+                            <!-- 重置版本 -->
+                            <Grid Grid.Row="2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
                                 
-                                <Button Grid.Column="2" Content="重置版本" 
+                                <StackPanel Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="重置版本" FontSize="14" FontWeight="SemiBold"
+                                                  Foreground="{StaticResource SecondaryTextBrush}"/>
+                                        <Border Background="{StaticResource DangerBrush}" CornerRadius="10" Padding="6,2">
+                                            <TextBlock Text="危險" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="刪除後續提交歷史，不可逆操作" FontSize="11" 
+                                              Foreground="{StaticResource MutedTextBrush}"/>
+                                </StackPanel>
+                                
+                                <Button Grid.Column="1" Content="重置版本" 
                                        Command="{x:Bind ViewModel.ResetToCommitCommand}"
                                        Background="{StaticResource DangerBrush}" Foreground="White"
-                                       CornerRadius="6" BorderThickness="0" Padding="12,8"
-                                       Margin="4,0"
-                                       ToolTipService.ToolTip="危險操作：刪除提交歷史並重置到指定版本"/>
+                                       CornerRadius="6" BorderThickness="0" Padding="16,8"
+                                       Margin="12,0" FontSize="13" FontWeight="SemiBold"
+                                       ToolTipService.ToolTip="使用 git reset --hard 刪除提交歷史，這是危險且不可逆的操作"/>
                             </Grid>
                         </Grid>
+                        
+                        <!-- 操作提示 -->
+                        <Border Background="{StaticResource InputBackgroundBrush}" 
+                                CornerRadius="6" Padding="12" Margin="0,12,0,0"
+                                BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" Opacity="0.8">
+                            <StackPanel Spacing="6">
+                                <TextBlock Text="💡 操作提示" FontSize="12" FontWeight="SemiBold"
+                                          Foreground="{StaticResource AccentBrush}"/>
+                                <TextBlock Text="• 選擇提交歷史中的任一版本進行操作" FontSize="11" 
+                                          Foreground="{StaticResource MutedTextBrush}"/>
+                                <TextBlock Text="• 建議優先使用「安全回復」保留完整歷史" FontSize="11" 
+                                          Foreground="{StaticResource MutedTextBrush}"/>
+                                <TextBlock Text="• 「重置版本」會永久刪除後續提交，請謹慎使用" FontSize="11" 
+                                          Foreground="{StaticResource MutedTextBrush}"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 

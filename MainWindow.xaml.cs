@@ -147,11 +147,11 @@ namespace GitDWG
                 Title = "GitDWG 使用說明",
                 Content = "GitDWG 是一個專為AutoCAD圖面檔案設計的Git版本控制工具。\n\n" +
                          "主要功能：\n" +
-                         "? Git版本控制\n" +
-                         "? AutoCAD圖面比較\n" +
-                         "? 智慧檔案管理\n" +
-                         "? 多用戶協作\n" +
-                         "? 圖形化分支管理\n\n" +
+                         "?? Git版本控制\n" +
+                         "?? AutoCAD圖面比較\n" +
+                         "?? 智慧檔案管理\n" +
+                         "?? 多用戶協作\n" +
+                         "?? 圖形化分支管理\n\n" +
                          "詳細說明請參考產品文檔。",
                 CloseButtonText = "確定",
                 XamlRoot = this.Content.XamlRoot,
@@ -209,11 +209,12 @@ namespace GitDWG
             var dialog = new ContentDialog
             {
                 Title = "檢查更新",
-                Content = "目前版本：GitDWG v1.2.0\n\n" +
+                Content = "目前版本：GitDWG v1.3.0\n\n" +
                          "最新更新：\n" +
-                         "? 深色UI主題設計\n" +
-                         "? 圖形化分支管理器\n" +
-                         "? 移除未完成功能\n\n" +
+                         "?? 版本回復功能\n" +
+                         "?? 深色UI主題設計\n" +
+                         "?? 圖形化分支管理器\n" +
+                         "? 快速提交功能\n\n" +
                          "您目前使用的是最新版本！",
                 CloseButtonText = "確定",
                 XamlRoot = this.Content.XamlRoot,
@@ -227,13 +228,14 @@ namespace GitDWG
             var dialog = new ContentDialog
             {
                 Title = "關於 GitDWG",
-                Content = "GitDWG v1.2.0\n\n" +
+                Content = "GitDWG v1.3.0\n\n" +
                          "專為AutoCAD設計的Git版本控制工具\n\n" +
                          "核心功能：\n" +
-                         "? 圖形化分支管理器\n" +
-                         "? 深色UI主題設計\n" +
-                         "? 專業版本控制\n" +
-                         "? CAD檔案智慧管理\n\n" +
+                         "?? 完整版本回復功能\n" +
+                         "?? 圖形化分支管理器\n" +
+                         "?? 深色UI主題設計\n" +
+                         "? 快速提交功能\n" +
+                         "?? CAD檔案智慧管理\n\n" +
                          "開發團隊：GitDWG Development Team\n" +
                          "技術支援：support@gitdwg.com\n\n" +
                          "? 2024 GitDWG. All rights reserved.\n\n" +
@@ -257,6 +259,23 @@ namespace GitDWG
                 RequestedTheme = ElementTheme.Dark
             };
             await dialog.ShowAsync();
+        }
+    }
+
+    /// <summary>
+    /// 將 null 值轉換為 Visibility.Collapsed，非 null 值轉換為 Visibility.Visible
+    /// </summary>
+    public class NullToVisibilityConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            // 如果值為 null，則返回 Collapsed，否則返回 Visible
+            return value == null ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+        {
+            throw new NotImplementedException();
         }
     }
 }

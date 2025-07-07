@@ -1019,6 +1019,32 @@ namespace GitDWG.ViewModels
                     diagnosis.Add("建議：檢查.gitignore設定");
                 }
 
+                // 檢查用戶設定檔案狀態
+                try
+                {
+                    var fileInfo = _userSettingsService.GetType()
+                        .GetMethod("GetSettingsFileInfo")?
+                        .Invoke(_userSettingsService, null) as dynamic;
+                    
+                    if (fileInfo != null)
+                    {
+                        diagnosis.Add($"?? 用戶設定檔案狀態：");
+                        diagnosis.Add($"   - 檔案存在: {fileInfo.Exists}");
+                        diagnosis.Add($"   - 目錄存在: {fileInfo.DirectoryExists}");
+                        diagnosis.Add($"   - 寫入權限: {fileInfo.HasWritePermission}");
+                        
+                        if (!fileInfo.HasWritePermission)
+                        {
+                            diagnosis.Add("?? 用戶設定檔案無寫入權限");
+                            diagnosis.Add("建議：以管理員身份執行或檢查檔案權限");
+                        }
+                    }
+                }
+                catch (Exception settingsEx)
+                {
+                    diagnosis.Add($"?? 檢查用戶設定時發生錯誤: {settingsEx.Message}");
+                }
+
                 var diagnosisText = string.Join("\n", diagnosis);
                 StatusMessage = $"診斷結果:\n{diagnosisText}";
             }
@@ -1104,8 +1130,6 @@ namespace GitDWG.ViewModels
             }
         }
 
-        #endregion
-
         private async Task RevertToCommitAsync()
         {
             if (SelectedCommit == null)
@@ -1122,44 +1146,86 @@ namespace GitDWG.ViewModels
                 var mainWindow = ((App)App.Current).MainWindow;
                 if (mainWindow != null)
                 {
-                    var dialog = new ContentDialog
+                    // 獲取當前分支和狀態信息
+                    var currentBranch = _gitService.GetCurrentBranch();
+                    var statusInfo = _gitService.GetDetailedStatus();
+                    
+                    // 檢查工作目錄是否有未提交的變更
+                    if (statusInfo.UnstagedFilesCount > 0 || statusInfo.UntrackedFilesCount > 0)
                     {
-                        Title = "確認回復版本",
-                        Content = $"即將回復到以下版本：\n\n" +
-                                 $"提交: {targetCommit.ShortSha}\n" +
-                                 $"訊息: {targetCommit.Message.Split('\n')[0]}\n" +
-                                 $"作者: {targetCommit.Author}\n" +
-                                 $"日期: {targetCommit.Date:yyyy-MM-dd HH:mm}\n\n" +
-                                 $"這將會創建一個新的提交來撤銷指定版本之後的所有變更。\n" +
-                                 $"原有的提交歷史會被保留，這是安全的操作。\n\n" +
-                                 $"是否確認執行？",
+                        var warningDialog = new ContentDialog
+                        {
+                            Title = "?? 工作目錄有未提交的變更",
+                            Content = $"檢測到以下未提交的變更：\n\n" +
+                                     $"? 未暫存的檔案：{statusInfo.UnstagedFilesCount} 個\n" +
+                                     $"? 未追蹤的檔案：{statusInfo.UntrackedFilesCount} 個\n\n" +
+                                     $"建議在執行版本回復前先提交這些變更。\n\n" +
+                                     $"您可以：\n" +
+                                     $"1. 取消操作，先提交變更\n" +
+                                     $"2. 繼續執行（變更可能會丟失）",
+                            PrimaryButtonText = "取消操作",
+                            SecondaryButtonText = "繼續執行",
+                            DefaultButton = ContentDialogButton.Primary,
+                            XamlRoot = mainWindow.Content.XamlRoot,
+                            RequestedTheme = Microsoft.UI.Xaml.ElementTheme.Dark
+                        };
+
+                        var warningResult = await warningDialog.ShowAsync();
+                        if (warningResult == ContentDialogResult.Primary)
+                        {
+                            StatusMessage = "已取消版本回復操作";
+                            return;
+                        }
+                    }
+
+                    // 創建詳細的確認對話框
+                    var confirmDialog = new ContentDialog
+                    {
+                        Title = "?? 確認安全回復版本",
+                        Content = $"即將執行安全回復操作：\n\n" +
+                                 $"?? 目標版本信息：\n" +
+                                 $"? 提交：{targetCommit.ShortSha}\n" +
+                                 $"? 訊息：{targetCommit.Message.Split('\n')[0]}\n" +
+                                 $"? 作者：{targetCommit.Author}\n" +
+                                 $"? 日期：{targetCommit.Date:yyyy-MM-dd HH:mm:ss}\n\n" +
+                                 $"??? 安全回復操作說明：\n" +
+                                 $"? 這將創建一個新的提交來撤銷指定版本之後的所有變更\n" +
+                                 $"? 原有的提交歷史會完全保留\n" +
+                                 $"? 這是安全且可逆的操作\n" +
+                                 $"? 如果需要，您可以再次回復到任何版本\n\n" +
+                                 $"?? 當前狀態：\n" +
+                                 $"? 分支：{currentBranch}\n" +
+                                 $"? 已暫存檔案：{statusInfo.StagedFilesCount} 個\n" +
+                                 $"? 未暫存檔案：{statusInfo.UnstagedFilesCount} 個\n\n" +
+                                 $"是否確認執行安全回復？",
                         PrimaryButtonText = "確認回復",
                         SecondaryButtonText = "取消",
                         DefaultButton = ContentDialogButton.Secondary,
-                        XamlRoot = mainWindow.Content.XamlRoot
+                        XamlRoot = mainWindow.Content.XamlRoot,
+                        RequestedTheme = Microsoft.UI.Xaml.ElementTheme.Dark
                     };
 
-                    var result = await dialog.ShowAsync();
+                    var result = await confirmDialog.ShowAsync();
 
                     if (result == ContentDialogResult.Primary)
                     {
-                        StatusMessage = "正在回復版本...";
+                        StatusMessage = "正在執行安全回復操作...";
                         
                         // 執行Git revert操作
                         _gitService.RevertToCommit(targetCommit.Sha, AuthorName, AuthorEmail);
                         
                         RefreshData();
-                        StatusMessage = $"成功回復到版本 {targetCommit.ShortSha}";
+                        StatusMessage = $"? 成功回復到版本 {targetCommit.ShortSha}，已創建新的回復提交";
                     }
                     else
                     {
-                        StatusMessage = "已取消回復操作";
+                        StatusMessage = "已取消版本回復操作";
                     }
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"回復版本失敗: {ex.Message}";
+                StatusMessage = $"? 版本回復失敗: {ex.Message}";
             }
         }
 
@@ -1179,81 +1245,131 @@ namespace GitDWG.ViewModels
                 var mainWindow = ((App)App.Current).MainWindow;
                 if (mainWindow != null)
                 {
-                    var dialog = new ContentDialog
+                    // 獲取當前分支和狀態信息
+                    var currentBranch = _gitService.GetCurrentBranch();
+                    var statusInfo = _gitService.GetDetailedStatus();
+                    
+                    // 計算將要刪除的提交數量
+                    var commits = Commits.ToList();
+                    var targetIndex = commits.IndexOf(targetCommit);
+                    var commitsToDelete = targetIndex; // 0-based，所以 targetIndex 就是要刪除的提交數量
+
+                    // 第一層警告對話框
+                    var warningDialog = new ContentDialog
                     {
-                        Title = "?? 危險操作：重置到指定版本",
-                        Content = $"警告：此操作將會：\n\n" +
-                                 $"1. 刪除指定提交之後的所有提交歷史\n" +
-                                 $"2. 將工作目錄重置到指定版本\n" +
-                                 $"3. 這是不可逆的操作！\n\n" +
-                                 $"目標版本：\n" +
-                                 $"提交: {targetCommit.ShortSha}\n" +
-                                 $"訊息: {targetCommit.Message.Split('\n')[0]}\n" +
-                                 $"作者: {targetCommit.Author}\n" +
-                                 $"日期: {targetCommit.Date:yyyy-MM-dd HH:mm}\n\n" +
-                                 $"建議：如果不確定，請使用「回復版本」而不是重置。\n\n" +
-                                 $"確定要執行重置操作嗎？",
-                        PrimaryButtonText = "確認重置",
-                        SecondaryButtonText = "取消",
+                        Title = "?? 危險操作警告",
+                        Content = $"?? 重置版本是危險操作！\n\n" +
+                                 $"此操作將會：\n" +
+                                 $"? 永久刪除 {commitsToDelete} 個提交及其歷史記錄\n" +
+                                 $"? 將工作目錄重置到指定版本\n" +
+                                 $"? 無法復原已刪除的提交\n" +
+                                 $"? 可能導致數據丟失\n\n" +
+                                 $"?? 建議使用「安全回復」替代：\n" +
+                                 $"? 安全回復會保留所有歷史記錄\n" +
+                                 $"? 創建新提交來撤銷變更\n" +
+                                 $"? 操作完全可逆\n" +
+                                 $"? 適合團隊協作環境\n\n" +
+                                 $"您確定要繼續使用危險的重置操作嗎？",
+                        PrimaryButtonText = "我了解風險，繼續",
+                        SecondaryButtonText = "取消操作",
                         DefaultButton = ContentDialogButton.Secondary,
-                        XamlRoot = mainWindow.Content.XamlRoot
+                        XamlRoot = mainWindow.Content.XamlRoot,
+                        RequestedTheme = Microsoft.UI.Xaml.ElementTheme.Dark
                     };
 
-                    var result = await dialog.ShowAsync();
+                    var warningResult = await warningDialog.ShowAsync();
 
-                    if (result == ContentDialogResult.Primary)
+                    if (warningResult != ContentDialogResult.Primary)
                     {
-                        // 再次確認
-                        var confirmDialog = new ContentDialog
-                        {
-                            Title = "最後確認",
-                            Content = "此操作將永久刪除提交歷史！\n\n請輸入 \"CONFIRM\" 以確認執行：",
-                            PrimaryButtonText = "執行重置",
-                            SecondaryButtonText = "取消",
-                            DefaultButton = ContentDialogButton.Secondary,
-                            XamlRoot = mainWindow.Content.XamlRoot
-                        };
+                        StatusMessage = "已取消重置操作";
+                        return;
+                    }
 
-                        var confirmTextBox = new TextBox { PlaceholderText = "輸入 CONFIRM" };
-                        confirmDialog.Content = new StackPanel
-                        {
-                            Children =
-                            {
-                                new TextBlock { Text = "此操作將永久刪除提交歷史！\n\n請輸入 \"CONFIRM\" 以確認執行：", TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap },
-                                confirmTextBox
-                            },
-                            Spacing = 12
-                        };
+                    // 第二層確認對話框
+                    var confirmDialog = new ContentDialog
+                    {
+                        Title = "?? 最終確認",
+                        PrimaryButtonText = "執行重置",
+                        SecondaryButtonText = "取消",
+                        DefaultButton = ContentDialogButton.Secondary,
+                        XamlRoot = mainWindow.Content.XamlRoot,
+                        RequestedTheme = Microsoft.UI.Xaml.ElementTheme.Dark
+                    };
 
-                        var confirmResult = await confirmDialog.ShowAsync();
+                    // 創建確認輸入面板
+                    var confirmPanel = new StackPanel { Spacing = 16 };
+                    
+                    var finalWarning = new TextBlock
+                    {
+                        Text = "?? 這是最後一次確認機會！\n\n" +
+                               "重置操作將立即執行且無法撤銷。\n" +
+                               "請輸入以下確認文字以繼續：",
+                        FontSize = 12,
+                        TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                    };
 
-                        if (confirmResult == ContentDialogResult.Primary && 
-                            confirmTextBox.Text?.Trim().ToUpper() == "CONFIRM")
-                        {
-                            StatusMessage = "正在重置版本...";
-                            
-                            // 執行Git reset --hard操作
-                            _gitService.ResetToCommit(targetCommit.Sha);
-                            
-                            RefreshData();
-                            StatusMessage = $"成功重置到版本 {targetCommit.ShortSha}";
-                        }
-                        else
-                        {
-                            StatusMessage = "已取消重置操作";
-                        }
+                    var confirmationText = new TextBlock
+                    {
+                        Text = "確認刪除提交歷史",
+                        FontSize = 14,
+                        FontWeight = Microsoft.UI.Text.FontWeights.Bold,
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Center,
+                        Margin = new Microsoft.UI.Xaml.Thickness(0, 8, 0, 0)
+                    };
+
+                    var confirmTextBox = new TextBox
+                    {
+                        PlaceholderText = "請完整輸入上方確認文字",
+                        HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch,
+                        FontSize = 12
+                    };
+
+                    // 目標版本信息
+                    var targetInfoText = new TextBlock
+                    {
+                        Text = $"?? 重置目標版本：\n\n" +
+                               $"提交：{targetCommit.ShortSha}\n" +
+                               $"訊息：{targetCommit.Message.Split('\n')[0]}\n" +
+                               $"作者：{targetCommit.Author}\n" +
+                               $"日期：{targetCommit.Date:yyyy-MM-dd HH:mm:ss}\n\n" +
+                               $"?? 將刪除此版本之後的 {commitsToDelete} 個提交",
+                        FontSize = 11,
+                        TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap
+                    };
+
+                    confirmPanel.Children.Add(finalWarning);
+                    confirmPanel.Children.Add(confirmationText);
+                    confirmPanel.Children.Add(confirmTextBox);
+                    confirmPanel.Children.Add(targetInfoText);
+
+                    confirmDialog.Content = confirmPanel;
+
+                    var confirmResult = await confirmDialog.ShowAsync();
+
+                    if (confirmResult == ContentDialogResult.Primary && 
+                        confirmTextBox.Text?.Trim() == "確認刪除提交歷史")
+                    {
+                        StatusMessage = "正在執行重置操作...";
+                        
+                        // 執行Git reset --hard操作
+                        _gitService.ResetToCommit(targetCommit.Sha);
+                        
+                        RefreshData();
+                        StatusMessage = $"? 成功重置到版本 {targetCommit.ShortSha}，已刪除 {commitsToDelete} 個後續提交";
                     }
                     else
                     {
-                        StatusMessage = "已取消重置操作";
+                        StatusMessage = "已取消重置操作（確認文字不正確或用戶取消）";
                     }
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"重置版本失敗: {ex.Message}";
+                StatusMessage = $"? 重置版本失敗: {ex.Message}";
             }
         }
+
+        #endregion
 
         private void UpdateStatus()
         {
@@ -1269,58 +1385,67 @@ namespace GitDWG.ViewModels
 
         private void UpdateCommitButtonTooltip()
         {
-            var issues = new List<string>();
-
-            if (!IsRepositoryLoaded)
+            try
             {
-                issues.Add("尚未選擇有效的Git儲存庫");
-            }
+                var issues = new List<string>();
 
-            if (string.IsNullOrWhiteSpace(CommitMessage))
-            {
-                issues.Add("請輸入提交訊息");
-            }
-
-            if (string.IsNullOrWhiteSpace(AuthorName))
-            {
-                issues.Add("作者姓名未設定");
-            }
-
-            if (string.IsNullOrWhiteSpace(AuthorEmail))
-            {
-                issues.Add("作者信箱未設定");
-            }
-
-            if (IsRepositoryLoaded)
-            {
-                try
+                if (!IsRepositoryLoaded)
                 {
-                    var statusInfo = _gitService.GetDetailedStatus();
-                    if (!statusInfo.CanCommit && statusInfo.StagedFilesCount == 0)
+                    issues.Add("尚未選擇有效的Git儲存庫");
+                }
+
+                if (string.IsNullOrWhiteSpace(CommitMessage))
+                {
+                    issues.Add("請輸入提交訊息");
+                }
+
+                if (string.IsNullOrWhiteSpace(AuthorName))
+                {
+                    issues.Add("作者姓名未設定");
+                }
+
+                if (string.IsNullOrWhiteSpace(AuthorEmail))
+                {
+                    issues.Add("作者信箱未設定");
+                }
+
+                if (IsRepositoryLoaded)
+                {
+                    try
                     {
-                        if (statusInfo.UnstagedFilesCount > 0)
+                        var statusInfo = _gitService.GetDetailedStatus();
+                        if (!statusInfo.CanCommit && statusInfo.StagedFilesCount == 0)
                         {
-                            issues.Add("有檔案變更未暫存，請先點擊「暫存所有」");
-                        }
-                        else
-                        {
-                            issues.Add("沒有檔案變更可以提交");
+                            if (statusInfo.UnstagedFilesCount > 0)
+                            {
+                                issues.Add("有檔案變更未暫存，請先點擊「暫存所有」");
+                            }
+                            else
+                            {
+                                issues.Add("沒有檔案變更可以提交");
+                            }
                         }
                     }
+                    catch (Exception ex)
+                    {
+                        issues.Add($"檢查儲存庫狀態時發生錯誤: {ex.Message}");
+                    }
                 }
-                catch (Exception ex)
-                {
-                    issues.Add($"檢查儲存庫狀態時發生錯誤: {ex.Message}");
-                }
-            }
 
-            if (issues.Any())
-            {
-                CommitButtonTooltip = "無法提交: " + string.Join("、", issues);
+                if (issues.Any())
+                {
+                    CommitButtonTooltip = "無法提交: " + string.Join("、", issues);
+                }
+                else
+                {
+                    CommitButtonTooltip = "點擊提交變更到Git儲存庫";
+                }
             }
-            else
+            catch (Exception ex)
             {
-                CommitButtonTooltip = "點擊提交變更到Git儲存庫";
+                // 如果更新提示失敗，設定預設值
+                CommitButtonTooltip = "提交按鈕狀態更新失敗";
+                System.Diagnostics.Debug.WriteLine($"UpdateCommitButtonTooltip failed: {ex.Message}");
             }
         }
 

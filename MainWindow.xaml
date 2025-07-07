@@ -21,33 +21,197 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 工具列 -->
-        <Grid Grid.Row="0" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" Padding="16,8">
+        <!-- 頂端功能表列 -->
+        <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                <Button Content="選擇儲存庫" Command="{x:Bind ViewModel.SelectRepositoryCommand}"/>
-                <Button Content="初始化儲存庫" Command="{x:Bind ViewModel.InitializeRepositoryCommand}"/>
-                <Button Content="重新整理" Command="{x:Bind ViewModel.RefreshCommand}"/>
-                <Button Content="強制重新整理" Command="{x:Bind ViewModel.ForceRefreshCommand}" 
-                       ToolTipService.ToolTip="強制重新整理Git狀態，解決DWG檔案偵測問題"/>
-                <Button Content="檢查CAD檔案" Command="{x:Bind ViewModel.CheckCadFilesCommand}"
-                       ToolTipService.ToolTip="檢查CAD檔案狀態和鎖定情況"/>
-                <Button Content="診斷提交問題" Command="{x:Bind ViewModel.DiagnoseCommitCommand}"
-                       ToolTipService.ToolTip="診斷為什麼無法提交並提供解決建議"/>
-                <Button Content="設定AutoCAD路徑" Command="{x:Bind ViewModel.SetAutoCADPathCommand}"/>
-                <Button Content="用戶設定" Command="{x:Bind ViewModel.EditUserSettingsCommand}"
-                       ToolTipService.ToolTip="修改作者資訊和其他設定"/>
-            </StackPanel>
+            <MenuBar Grid.Column="0" Background="{ThemeResource LayerFillColorDefaultBrush}">
+                
+                <!-- 檔案選單 -->
+                <MenuBarItem Title="檔案(F)">
+                    <MenuFlyoutItem Text="選擇儲存庫" Command="{x:Bind ViewModel.SelectRepositoryCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="O"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="初始化儲存庫" Command="{x:Bind ViewModel.InitializeRepositoryCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="N"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="重新整理" Command="{x:Bind ViewModel.RefreshCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F5"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="強制重新整理" Command="{x:Bind ViewModel.ForceRefreshCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control,Shift" Key="F5"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                </MenuBarItem>
 
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                <TextBlock Text="目前分支:" VerticalAlignment="Center"/>
-                <TextBlock Text="{x:Bind ViewModel.CurrentBranch, Mode=OneWay}" 
-                          FontWeight="Bold" VerticalAlignment="Center"/>
-            </StackPanel>
+                <!-- 編輯選單 -->
+                <MenuBarItem Title="編輯(E)">
+                    <MenuFlyoutItem Text="快速提交" Command="{x:Bind ViewModel.QuickCommitCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="Enter"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="暫存所有" Command="{x:Bind ViewModel.StageAllCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="A"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="提交變更" Command="{x:Bind ViewModel.CommitCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="Enter"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="用戶設定" Command="{x:Bind ViewModel.EditUserSettingsCommand}"/>
+                </MenuBarItem>
+
+                <!-- 檢視選單 -->
+                <MenuBarItem Title="檢視(V)">
+                    <MenuFlyoutItem Text="檢查CAD檔案" Command="{x:Bind ViewModel.CheckCadFilesCommand}"/>
+                    <MenuFlyoutItem Text="診斷提交問題" Command="{x:Bind ViewModel.DiagnoseCommitCommand}"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutSubItem Text="版本操作">
+                        <MenuFlyoutItem Text="安全回復" Command="{x:Bind ViewModel.RevertToCommitCommand}"/>
+                        <MenuFlyoutItem Text="重置版本" Command="{x:Bind ViewModel.ResetToCommitCommand}"/>
+                        <MenuFlyoutItem Text="比較版本" Command="{x:Bind ViewModel.CompareCommitsCommand}"/>
+                    </MenuFlyoutSubItem>
+                </MenuBarItem>
+
+                <!-- Git選單 -->
+                <MenuBarItem Title="Git(G)">
+                    <MenuFlyoutItem Text="建立新分支" Command="{x:Bind ViewModel.CreateBranchCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control,Shift" Key="B"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutSubItem Text="分支操作">
+                        <MenuFlyoutItem Text="切換分支" x:Name="SwitchBranchMenuItem"/>
+                    </MenuFlyoutSubItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="查看提交歷史">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="H"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                </MenuBarItem>
+
+                <!-- 專案選單 -->
+                <MenuBarItem Title="專案(P)">
+                    <MenuFlyoutItem Text="設定AutoCAD路徑" Command="{x:Bind ViewModel.SetAutoCADPathCommand}"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="開啟專案資料夾" Click="OpenProjectFolder_Click"/>
+                </MenuBarItem>
+
+                <!-- 建置選單 -->
+                <MenuBarItem Title="建置(B)">
+                    <MenuFlyoutItem Text="建立提交" Command="{x:Bind ViewModel.CommitCommand}"/>
+                    <MenuFlyoutItem Text="建立分支" Command="{x:Bind ViewModel.CreateBranchCommand}"/>
+                </MenuBarItem>
+
+                <!-- 偵錯選單 -->
+                <MenuBarItem Title="偵錯(D)">
+                    <MenuFlyoutItem Text="診斷Git狀態" Command="{x:Bind ViewModel.DiagnoseCommitCommand}"/>
+                    <MenuFlyoutItem Text="檢查檔案鎖定" Command="{x:Bind ViewModel.CheckCadFilesCommand}"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="重新整理Git狀態" Command="{x:Bind ViewModel.ForceRefreshCommand}"/>
+                </MenuBarItem>
+
+                <!-- 測試選單 -->
+                <MenuBarItem Title="測試(S)">
+                    <MenuFlyoutItem Text="測試AutoCAD連接" Click="TestAutoCADConnection_Click"/>
+                    <MenuFlyoutItem Text="測試圖面開啟" Click="TestDrawingOpen_Click"/>
+                </MenuBarItem>
+
+                <!-- 分析選單 -->
+                <MenuBarItem Title="分析(N)">
+                    <MenuFlyoutItem Text="分析提交趨勢" Click="AnalyzeCommitTrends_Click"/>
+                    <MenuFlyoutItem Text="分析檔案變更" Click="AnalyzeFileChanges_Click"/>
+                </MenuBarItem>
+
+                <!-- 工具選單 -->
+                <MenuBarItem Title="工具(T)">
+                    <MenuFlyoutItem Text="圖面比較工具" Click="DrawingCompareTools_Click"/>
+                    <MenuFlyoutItem Text="批次處理工具" Click="BatchProcessTools_Click"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="選項設定" Command="{x:Bind ViewModel.EditUserSettingsCommand}">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="P"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                </MenuBarItem>
+
+                <!-- 延伸模組選單 -->
+                <MenuBarItem Title="延伸模組(X)">
+                    <MenuFlyoutItem Text="管理延伸模組" Click="ManageExtensions_Click"/>
+                    <MenuFlyoutItem Text="安裝延伸模組" Click="InstallExtensions_Click"/>
+                </MenuBarItem>
+
+                <!-- 視窗選單 -->
+                <MenuBarItem Title="視窗(W)">
+                    <MenuFlyoutItem Text="新增視窗" Click="NewWindow_Click">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control,Shift" Key="N"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="關閉視窗" Click="CloseWindow_Click">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="W"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                </MenuBarItem>
+
+                <!-- 說明選單 -->
+                <MenuBarItem Title="說明(H)">
+                    <MenuFlyoutItem Text="使用說明" Click="ShowHelp_Click">
+                        <MenuFlyoutItem.KeyboardAccelerators>
+                            <KeyboardAccelerator Key="F1"/>
+                        </MenuFlyoutItem.KeyboardAccelerators>
+                    </MenuFlyoutItem>
+                    <MenuFlyoutItem Text="快速入門" Click="ShowQuickStart_Click"/>
+                    <MenuFlyoutItem Text="鍵盤快捷鍵" Click="ShowKeyboardShortcuts_Click"/>
+                    <MenuFlyoutSeparator/>
+                    <MenuFlyoutItem Text="檢查更新" Click="CheckForUpdates_Click"/>
+                    <MenuFlyoutItem Text="關於GitDWG" Click="ShowAbout_Click"/>
+                </MenuBarItem>
+            </MenuBar>
+
+            <!-- 右側狀態區域 -->
+            <Grid Grid.Column="1" Margin="16,0">
+                <StackPanel Orientation="Horizontal" Spacing="16">
+                    <!-- 分支資訊 -->
+                    <Border Background="{ThemeResource SystemFillColorAttentionBackgroundBrush}" 
+                           CornerRadius="12" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="分支:" FontSize="11" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ViewModel.CurrentBranch, Mode=OneWay}" 
+                                      FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- 用戶資訊 -->
+                    <Border Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" 
+                           CornerRadius="12" Padding="8,4">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="用戶:" FontSize="11" VerticalAlignment="Center"/>
+                            <TextBlock Text="{x:Bind ViewModel.AuthorName, Mode=OneWay}" 
+                                      FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </Grid>
 
         <!-- 主要內容 -->
@@ -120,7 +284,7 @@
                             <!-- 提交按鈕群組 -->
                             <StackPanel Spacing="8">
                                 <!-- 快速提交按鈕 - 一鍵式操作 -->
-                                <Button Content="🚀 快速提交" 
+                                <Button Content="快速提交" 
                                        Command="{x:Bind ViewModel.QuickCommitCommand}"
                                        Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}"
                                        HorizontalAlignment="Stretch"
@@ -134,7 +298,7 @@
                                 </StackPanel>
                                 
                                 <!-- 說明文字 -->
-                                <TextBlock Text="💡 使用「快速提交」可一次完成暫存和提交，或使用傳統的「暫存所有」→「提交」兩步驟操作" 
+                                <TextBlock Text="使用「快速提交」可一次完成暫存和提交，或使用傳統的「暫存所有」→「提交」兩步驟操作" 
                                           FontSize="10" 
                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                           TextWrapping="Wrap"/>

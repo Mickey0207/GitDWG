@@ -82,14 +82,6 @@ namespace GitDWG.Views
                 Margin = new Thickness(0, 0, 0, 24)
             };
             
-            var iconText = new TextBlock
-            {
-                Text = "??",
-                FontSize = 32,
-                Margin = new Thickness(0, 0, 12, 0),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            
             var titleBlock = new TextBlock
             {
                 Text = "GitDWG 用戶登入",
@@ -100,7 +92,6 @@ namespace GitDWG.Views
                     Windows.UI.Color.FromArgb(255, 30, 41, 59))
             };
             
-            titlePanel.Children.Add(iconText);
             titlePanel.Children.Add(titleBlock);
             Grid.SetRow(titlePanel, 0);
             contentGrid.Children.Add(titlePanel);
@@ -121,7 +112,7 @@ namespace GitDWG.Views
             var userPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 20) };
             var userLabel = new TextBlock
             {
-                Text = "選擇用戶 ??",
+                Text = "選擇用戶",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 0, 8),
@@ -153,7 +144,7 @@ namespace GitDWG.Views
             var passwordPanel = new StackPanel { Margin = new Thickness(0, 0, 0, 20) };
             var passwordLabel = new TextBlock
             {
-                Text = "輸入密碼 ??",
+                Text = "輸入密碼",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 FontSize = 16,
                 Margin = new Thickness(0, 0, 0, 8),
@@ -202,7 +193,7 @@ namespace GitDWG.Views
 
             _loginButton = new Button
             {
-                Content = "?? 登入",
+                Content = "登入",
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Height = 44,
                 FontSize = 16,
@@ -218,7 +209,7 @@ namespace GitDWG.Views
 
             _addUserButton = new Button
             {
-                Content = "? 新增用戶",
+                Content = "新增用戶",
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Height = 40,
                 FontSize = 14,
@@ -233,7 +224,7 @@ namespace GitDWG.Views
 
             var exitButton = new Button
             {
-                Content = "? 退出應用程式",
+                Content = "退出應用程式",
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Height = 40,
                 FontSize = 14,
@@ -268,7 +259,7 @@ namespace GitDWG.Views
             var infoStack = new StackPanel { Spacing = 4 };
             var infoTitle = new TextBlock
             {
-                Text = "?? 使用說明",
+                Text = "使用說明",
                 FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
                 FontSize = 14,
                 Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
@@ -391,19 +382,19 @@ namespace GitDWG.Views
             
             var adminPasswordBox = new PasswordBox
             {
-                Header = "管理員密碼 ??",
+                Header = "管理員密碼",
                 PlaceholderText = "請輸入管理員密碼"
             };
             
             var newUserNameBox = new TextBox
             {
-                Header = "新用戶名稱 ??",
+                Header = "新用戶名稱",
                 PlaceholderText = "請輸入新用戶名稱"
             };
             
             var newUserPasswordBox = new PasswordBox
             {
-                Header = "新用戶密碼 ??",
+                Header = "新用戶密碼",
                 PlaceholderText = "請輸入新用戶密碼"
             };
 
@@ -455,7 +446,7 @@ namespace GitDWG.Views
         {
             if (_errorMessage != null)
             {
-                _errorMessage.Text = "? " + message;
+                _errorMessage.Text = "錯誤: " + message;
                 _errorMessage.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Windows.UI.Color.FromArgb(255, 239, 68, 68)); // 更現代的紅色
                 _errorMessage.Visibility = Visibility.Visible;
@@ -466,7 +457,7 @@ namespace GitDWG.Views
         {
             if (_errorMessage != null)
             {
-                _errorMessage.Text = "? " + message;
+                _errorMessage.Text = "成功: " + message;
                 _errorMessage.Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(
                     Windows.UI.Color.FromArgb(255, 16, 185, 129)); // 與登入按鈕一致的綠色
                 _errorMessage.Visibility = Visibility.Visible;
